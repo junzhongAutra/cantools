@@ -7,6 +7,7 @@ import time
 
 import can
 from argparse_addons import Integer
+from can.bit_timing import BitTimingFd
 
 from .. import database
 from .__utils__ import format_message, format_multiplexed_name
@@ -61,6 +62,18 @@ class Monitor(can.Listener):
 
         if args.fd:
             kwargs['fd'] = True
+            if args.bus_type == "pcan":
+                timingFD = BitTimingFd(
+                    f_clock=80000000,  # 时钟频率,有MHz和Hz,注意区分
+                    nom_brp=1,  # 仲裁场分频系数
+                    nom_tseg1=119,  # 仲裁场TSeg1
+                    nom_tseg2=40,  # 仲裁场TSeg2
+                    nom_sjw=40,  # 仲裁场同步跳变宽度
+                    data_brp=1,  # 数据场分频系数
+                    data_tseg1=29,  # 数据场TSeg1
+                    data_tseg2=10,  # 数据场TSeg2
+                    data_sjw=10)  # 数据场分频系数
+                kwargs['timing'] = timingFD
 
         try:
             return can.Bus(bustype=args.bus_type,
